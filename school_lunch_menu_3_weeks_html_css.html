@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>School Lunch Menu • 3 Weeks</title>
+  <style>
+    :root{
+      --bg: #0f172a;        /* slate-900 */
+      --panel: #0b1229;     /* slightly darker card bg for depth */
+      --card: #111b3a;      /* slate-800 */
+      --accent: #22d3ee;    /* cyan-400 */
+      --accent-2:#a78bfa;   /* violet-400 */
+      --text: #e5e7eb;      /* gray-200 */
+      --muted:#94a3b8;      /* slate-400 */
+      --ok:#34d399;         /* green-400 */
+      --warn:#fbbf24;       /* amber-400 */
+      --shadow: 0 10px 25px rgba(0,0,0,.35), 0 2px 8px rgba(0,0,0,.2);
+      --radius: 18px;
+    }
+    html,body{ height:100%; }
+    body{
+      margin:0; background: radial-gradient(1200px 800px at 10% 5%, #0b1537, #071028 60%, #060a1d) fixed;
+      color:var(--text); font: 16px/1.5 system-ui, -apple-system, Segoe UI, Roboto, Inter, Noto Sans, Ubuntu, Cantarell, 'Helvetica Neue', Arial, sans-serif;
+    }
+    .container{ max-width:1100px; margin: 32px auto 56px; padding: 0 20px; }
+    header{
+      display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom: 18px;
+    }
+    .brand{ display:flex; align-items:center; gap:14px; }
+    .logo{
+      width:52px; height:52px; border-radius:14px; background: linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%);
+      display:grid; place-items:center; box-shadow: var(--shadow);
+    }
+    .logo svg{ width:28px; height:28px; color:#071028; }
+    h1{ font-size: clamp(1.35rem, 1.1rem + 1.2vw, 2rem); margin:0; letter-spacing:.2px; }
+    .sub{ color:var(--muted); font-size:.95rem; }
+
+    .panel{
+      background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.02));
+      border:1px solid rgba(255,255,255,.06);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+
+    /* Tabs */
+    .tabs{
+      display:flex; gap:8px; flex-wrap:wrap; padding:12px; background: rgba(255,255,255,.03); border-bottom:1px solid rgba(255,255,255,.06);
+    }
+    .tab{
+      --ring: transparent;
+      position:relative; isolation:isolate; cursor:pointer; user-select:none;
+      border-radius: 999px; padding:10px 14px; font-weight:600; letter-spacing:.2px; color:var(--muted);
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+      border:1px solid rgba(255,255,255,.08);
+      transition: all .2s ease;
+    }
+    .tab:hover{ color:var(--text); border-color: rgba(255,255,255,.18); transform: translateY(-1px); }
+    .tab.active{
+      color:#071028; background: linear-gradient(180deg, var(--accent), var(--accent-2)); border-color: transparent;
+    }
+
+    .content{ padding: 14px; }
+    .week{ display:none; }
+    .week.active{ display:block; }
+
+    /* Day grid */
+    .grid{ display:grid; grid-template-columns: repeat(5, minmax(0,1fr)); gap:14px; }
+    @media (max-width: 900px){ .grid{ grid-template-columns: repeat(2, minmax(0,1fr)); } }
+    @media (max-width: 540px){ .grid{ grid-template-columns: 1fr; } }
+
+    .day{
+      background: linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01));
+      border:1px solid rgba(255,255,255,.08); border-radius: 16px; padding:14px 14px 12px; box-shadow: var(--shadow);
+      display:flex; flex-direction:column; gap:10px; position:relative; overflow:hidden;
+    }
+    .chip{
+      display:inline-flex; align-items:center; gap:8px; font-size:.8rem; font-weight:700; letter-spacing:.4px; text-transform:uppercase;
+      color:var(--text); background: rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.1); border-radius:999px; padding:6px 10px;
+    }
+    .items{ display:flex; flex-direction:column; gap:8px; }
+    .item{ display:flex; align-items:flex-start; gap:10px; }
+    .dot{ width:10px; height:10px; border-radius:50%; background: var(--accent); margin-top:6px; flex:none; }
+    .item span{ color: var(--text); }
+    .note{ color: var(--muted); font-size:.88rem; }
+
+    .legend{ display:flex; gap:10px; flex-wrap:wrap; margin-top: 8px; }
+    .tag{ font-size:.78rem; color:#071028; background: #a7f3d0; border:1px solid #6ee7b7; border-radius: 8px; padding: 4px 8px; font-weight:700; }
+    .tag.v{ background:#fde68a; border-color:#fcd34d; }
+    .tag.gf{ background:#93c5fd; border-color:#60a5fa; }
+
+    footer{ margin-top: 18px; color:var(--muted); font-size:.9rem; display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; }
+
+    /* Print styles for QR posters or noticeboards */
+    @media print{
+      body{ background:#fff; color:#000; }
+      .panel, .day{ box-shadow:none; }
+      .tabs{ background:#eee; }
+      .tab{ border:1px solid #999; }
+      .tab.active{ background:#ddd; color:#000; }
+      .grid{ grid-template-columns: repeat(3, 1fr); }
+      .legend .tag{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="brand">
+        <div class="logo" aria-hidden="true" title="Lunch Menu">
+          <!-- Simple plate + fork icon -->
+          <svg viewBox="0 0 24 24" fill="currentColor" role="img" aria-label="Plate and fork">
+            <path d="M9 11a7 7 0 1 0 14 0 7 7 0 0 0-14 0Zm2 0a5 5 0 1 1 10 0 5 5 0 0 1-10 0ZM1.5 3v9.5A1.5 1.5 0 0 0 3 14h.5V3H5v11h1.5V3H8v11H9.5V3H11v11.5A1.5 1.5 0 0 1 9.5 16H3A3 3 0 0 1 0 13V3h1.5Z"/>
+          </svg>
+        </div>
+        <div>
+          <h1>Daily School Lunch Menu</h1>
+          <div class="sub">Three-week rotating menu • Kid-friendly • Balanced & tasty</div>
+        </div>
+      </div>
+      <div class="sub">Scan the QR code to view this page anytime</div>
+    </header>
+
+    <section class="panel" role="region" aria-label="Lunch menu weeks">
+      <nav class="tabs" aria-label="Weeks">
+        <button class="tab active" data-week="w1" aria-pressed="true">Week 1</button>
+        <button class="tab" data-week="w2" aria-pressed="false">Week 2</button>
+        <button class="tab" data-week="w3" aria-pressed="false">Week 3</button>
+      </nav>
+
+      <div class="content">
+        <!-- WEEK 1 -->
+        <div id="w1" class="week active" aria-labelledby="Week 1">
+          <div class="grid">
+            <div class="day">
+              <div class="chip">Monday</div>
+              <div class="items">
+                <div class="item"><div class="dot"></div><span>Whole-wheat Veggie Wrap (carrot, cucumber, mild hummus)</span></div>
+                <div class="item"><div class="dot"></div><span>Sweet corn & pea salad</span></div>
+                <div class="item"><div class="dot"></div><span>Seasonal fruit cup</span></div>
+                <div class="item"><div class="dot"></div><span>Milk or fortified soy milk</span></div>
+              </div>
+              <div class="legend"><span class="tag v">Veg</span><span class="tag gf">Nut-Free</span></div>
+            </div>
+            <div class="day">
+              <div class="chip">Tuesday</div>
+              <div class="items">
+                <div class="item"><div class="dot"></div><span>Tomato-basil Pasta with grated cheese</span></div>
+                <div class="item"><div class="dot"></div><span>Cucumber sticks & ranch dip</span></div>
+                <div class="item"><div class="dot"></div><span>Orange slices</span></div>
+                <div class="item"><div class="dot"></div><span>Milk or water</span></div>
+              </div>
+              <div class="legend"><span class="tag v">Veg</span></div>
+            </div>
+            <div class="day">
+              <div class="chip">Wednesday</div>
+              <div class="items">
+                <div class="item"><div class="dot"></div><span>Grilled Paneer & Veggie Rice Bowl</span></div>
+                <div class="item"><div class="dot"></div><span>Yogurt cup</span></div>
+                <div class="item"><div class="dot"></div><span>Apple wedges</span></div>
+                <div class="item"><div class="dot"></div><span>Water</span></div>
+              </div>
+              <div class="legend"><span class="tag v">Veg</span><span class="tag gf">Gluten-Free</span></div>
+            </div>
+            <div class="day">
+              <div class="chip">Thursday</div>
+              <div class="items">
+                <div class="item"><div class="dot"></div><span>Mini Chapati Rolls with Chicken (or tofu)</span></div>
+                <div class="item"><div class="dot"></div><span>Carrot & beet slaw</span></div>
+                <div class="item"><div class="dot"></div><span>Banana</span></div>
+                <div class="item"><div class="dot"></div><span>Milk</span></div>
+              </div>
+              <div class="legend"><span class="tag">Protein+</span></div>
+            </div>
+            <div class="day">
+              <div class="chip">Friday</div>
+              <div class="items">
+                <div class="item"><div class="dot"></div><span>Cheese & Veggie Quesadilla (whole-wheat)</span></div>
+                <div class="item"><div class="dot"></div><span>Tomato salsa (mild)</span></div>
+                <div class="item"><div class="dot"></div><span>Watermelon cubes</span></div>
+                <div class="item"><div class="dot"></div><span>Milk or water</span></div>
+              </div>
+              <div class="legend"><span class="tag v">Veg</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- WEEK 2 -->
+        <div id="w2" class="week" aria-labelledby="Week 2">
+          <div class="grid">
+            <div class="day">
+              <div class="chip">Monday</div>
+              <div class="items">
+                <div class="item"><div class="dot"></div><span>Veggie Fried Rice (egg optional)</span></div>
+                <div class="item"><div class="dot"></div><span>Steamed edamame</span></div>
+                <div class="item"><div class="dot"></div><span>Pineapple tidbits</span></div>
+                <div class="item"><div class="dot"></div><span>Water</span></div>
+              </div>
+              <div class="legend"><span class="tag v">Veg</span><span class="tag">Egg Opt.</span></div>
+            </div>
+            <div class="day">
+              <div class="chip">Tuesday</div>
+              <div class="items">
+                <div class="item"><div class="dot"></div><span>Whole-grain Veggie Pizza (capsicum, corn)</span></div>
+                <div class="item"><div class="dot"></div><span>Green salad (olive oil & lemon)</span></div>
+                <div class="item"><div class="dot"></div><span>Grapes</span></div>
+                <div class="item"><div class="dot"></div><span>Milk</span></div>
+              </div>
+              <div class="legend"><span class="tag v">Veg</span></div>
+            </div>
+            <div class="day">
+              <div class="chip">Wednesday</div>
+              <div class="items">
+                <div class="item"><div class="dot"></div><span>Chickpea & Veggie Curry with Rice</span></div>
+                <div class="item"><div class="dot"></div><span>Plain yogurt</span></div>
+                <div class="item"><div class="dot"></div><span>Apple slices</span></div>
+                <div class="item"><div class="dot"></div><span>Water</span></div>
+              </div>
+              <div class="legend"><span class="tag v">Veg</span><span class="tag gf">Gluten-Free</span></div>
+            </div>
+            <div class="day">
+              <div class="chip">Thursday</div>
+              <div class="items">
+                <div class="item"><div class="dot"></div><span>Turkey (or Paneer) Sandwich on whole wheat</span></div>
+                <div class="item"><div class="dot"></div><span>Carrot sticks</span></div>
+                <div class="item"><div class="dot"></div><span>Strawberries</span></div>
+                <div class="item"><div class="dot"></div><span>Milk or water</span></div>
+              </div>
+              <div class="legend"><span class="tag">Protein+</span></div>
+            </div>
+            <div class="day">
+              <div class="chip">Friday</div>
+              <div class="items">
+                <div class="item"><div class="dot"></div><span>Lentil & Veggie Sloppy Joe on bun</span></div>
+                <div class="item"><div class="dot"></div><span>Coleslaw (light)</span></div>
+                <div class="item"><div class="dot"></div><span>Mango slices</span></div>
+                <div class="item"><div class="dot"></div><span>Water</span></div>
+              </div>
+              <div class="legend"><span class="tag v">Veg</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- WEEK 3 -->
+        <div id="w3" class="week" aria-labelledby="Week 3">
+          <div class="grid">
+            <div class="day">
+              <div class="chip">Monday</div>
+              <div class="items">
+                <div class="item"><div class="dot"></div><span>Veggie Noodles (soy-ginger, mild)</span></div>
+                <div class="item"><div class="dot"></div><span>Steamed broccoli florets</span></div>
+                <div class="item"><div class="dot"></div><span>Peach cup</span></div>
+                <div class="item"><div class="dot"></div><span>Milk</span></div>
+              </div>
+              <div class="legend"><span class="tag v">Veg</span></div>
+            </div>
+            <div class="day">
+              <div class="chip">Tuesday</div>
+              <div class="items">
+                <div class="item"><div class="dot"></div><span>Bean & Cheese Burrito (whole-wheat)</span></div>
+                <div class="item"><div class="dot"></div><span>Corn salad</span></div>
+                <div class="item"><div class="dot"></div><span>Pear slices</span></div>
+                <div class="item"><div class="dot"></div><span>Water</span></div>
+              </div>
+              <div class="legend"><span class="tag v">Veg</span></div>
+            </div>
+            <div class="day">
+              <div class="chip">Wednesday</div>
+              <div class="items">
+                <div class="item"><div class="dot"></div><span>Chicken & Rice Pilaf (tofu option)</span></div>
+                <div class="item"><div class="dot"></div><span>Mixed veggie medley</span></div>
+                <div class="item"><div class="dot"></div><span>Banana</span></div>
+                <div class="item"><div class="dot"></div><span>Milk or water</span></div>
+              </div>
+              <div class="legend"><span class="tag">Protein+</span><span class="tag gf">Gluten-Free</span></div>
+            </div>
+            <div class="day">
+              <div class="chip">Thursday</div>
+              <div class="items">
+                <div class="item"><div class="dot"></div><span>Margherita Pasta Bake</span></div>
+                <div class="item"><div class="dot"></div><span>Garden salad (ranch)</span></div>
+                <div class="item"><div class="dot"></div><span>Melon cubes</span></div>
+                <div class="item"><div class="dot"></div><span>Water</span></div>
+              </div>
+              <div class="legend"><span class="tag v">Veg</span></div>
+            </div>
+            <div class="day">
+              <div class="chip">Friday</div>
+              <div class="items">
+                <div class="item"><div class="dot"></div><span>Mini Idli with Sambar (mild)</span></div>
+                <div class="item"><div class="dot"></div><span>Cucumber & carrot sticks</span></div>
+                <div class="item"><div class="dot"></div><span>Seasonal fruit</span></div>
+                <div class="item"><div class="dot"></div><span>Milk</span></div>
+              </div>
+              <div class="legend"><span class="tag v">Veg</span></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <footer>
+      <div>All items are prepared kid-friendly (low spice, balanced nutrition). Allergies? Please inform the front desk.</div>
+      <div>Last updated: <span id="updated"></span></div>
+    </footer>
+  </div>
+
+  <script>
+    // Lightweight tab switcher
+    const tabs = document.querySelectorAll('.tab');
+    const weeks = document.querySelectorAll('.week');
+    tabs.forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const id = btn.dataset.week;
+        tabs.forEach(b=>{ b.classList.toggle('active', b===btn); b.setAttribute('aria-pressed', b===btn ? 'true' : 'false'); });
+        weeks.forEach(w=> w.classList.toggle('active', w.id===id));
+      });
+    });
+    // Update timestamp (so your QR visitors see freshness)
+    const d = new Date();
+    document.getElementById('updated').textContent = d.toLocaleString();
+  </script>
+</body>
+</html>
